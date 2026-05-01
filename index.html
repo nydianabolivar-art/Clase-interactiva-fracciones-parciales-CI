@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador · Fracciones Parciales · A. Bolívar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --paper: #f7f4ed;
+    --paper-dark: #ede8db;
+    --accent: #b8341a;
+    --accent-soft: #d97757;
+    --blue: #2c4f7c;
+    --blue-soft: #6b8fb5;
+    --green: #4a6b3a;
+    --gold: #b8941f;
+    --rule: #c9c1ae;
+    --muted: #6b6358;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(26,26,26,0.05) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  /* ============ HEADER ============ */
+  header.masthead-block {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+  }
+  .masthead h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variation-settings: "opsz" 144;
+  }
+  .masthead .subtitle {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 1.1rem;
+    margin-top: 8px;
+  }
+  .masthead .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.8;
+  }
+  .meta strong { color: var(--ink); }
+  .author-credit {
+    border-top: 1px solid var(--rule);
+    padding: 10px 0;
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .author-credit .author-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+  .author-credit .author-name strong { font-style: normal; color: var(--accent); font-weight: 600; }
+
+  /* ============ TABS ============ */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 28px;
+  }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    padding: 14px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+    border-right: 1px solid var(--rule);
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active {
+    color: var(--ink);
+    background: var(--paper-dark);
+    font-weight: 600;
+  }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent);
+  }
+  .tab-btn .tab-num {
+    color: var(--accent);
+    margin-right: 8px;
+    font-weight: 600;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ============ CONTEXT BAR ============ */
+  .context-bar {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 14px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .context-bar label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--paper-dark);
+  }
+  .context-bar select {
+    background: transparent;
+    color: var(--paper);
+    border: 1px solid var(--paper-dark);
+    padding: 6px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .context-bar select option { background: var(--ink); color: var(--paper); }
+  .context-bar .scenario {
+    flex: 1;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--paper-dark);
+    min-width: 240px;
+  }
+
+  /* ============ GRID PANELES ============ */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--paper-dark);
+    border: 1px solid var(--rule);
+    padding: 24px;
+    position: relative;
+  }
+  .panel::before {
+    content: attr(data-num);
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    letter-spacing: 0.15em;
+  }
+  .panel h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .panel .panel-sub {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* ============ PANEL 1 ============ */
+  .case-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 4px 10px;
+    margin-bottom: 12px;
+  }
+  .case-badge.case-2 { background: var(--blue); }
+  .case-badge.case-3 { background: var(--green); }
+  .case-badge.case-4 { background: var(--gold); }
+
+  .preset-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .preset-btn {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 6px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .preset-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .preset-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .formula-display {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 18px;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+  }
+
+  .slider-block { margin-bottom: 14px; }
+  .slider-block label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+  }
+  .slider-block label .val {
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 0.95rem;
+  }
+  input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--rule);
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px;
+    background: var(--ink); cursor: pointer;
+    border-radius: 50%; border: 2px solid var(--paper);
+    box-shadow: 0 0 0 1px var(--ink);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 18px; height: 18px; background: var(--ink);
+    cursor: pointer; border-radius: 50%; border: 2px solid var(--paper);
+  }
+
+  .factorization {
+    background: var(--paper);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    margin-top: 14px;
+    font-size: 0.95rem;
+  }
+  .factorization .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  /* ============ PANEL 2 ============ */
+  .mode-toggle {
+    display: flex;
+    border: 1px solid var(--ink);
+    margin-bottom: 18px;
+  }
+  .mode-toggle button {
+    flex: 1; padding: 8px;
+    background: var(--paper-dark); border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mode-toggle button.active { background: var(--ink); color: var(--paper); }
+
+  .heaviside-stage {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 14px;
+    min-height: 140px;
+  }
+
+  .factor-clickable {
+    display: inline-block;
+    padding: 4px 10px;
+    margin: 2px;
+    border: 2px dashed transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+  .factor-clickable:hover {
+    border-color: var(--accent);
+    background: rgba(184,52,26,0.08);
+  }
+  .factor-clickable.covered {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+    border-style: solid;
+  }
+
+  .heaviside-result {
+    background: var(--paper);
+    padding: 14px;
+    border-left: 3px solid var(--blue);
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+  }
+  .heaviside-result .step {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .coefficient-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 0.9rem;
+  }
+  .coefficient-table th, .coefficient-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--rule);
+  }
+  .coefficient-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    background: var(--paper);
+  }
+  .coefficient-table td:nth-child(2) {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* ============ PANEL 3 ============ */
+  .graph-container {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 12px;
+    margin-bottom: 14px;
+  }
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-line { width: 24px; height: 3px; }
+
+  .validation-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 14px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: center;
+  }
+  .validation-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem; font-weight: 700;
+    color: var(--paper);
+  }
+  .validation-icon.ok { background: var(--green); }
+  .validation-icon.warn { background: var(--gold); }
+  .validation-icon.bad { background: var(--accent); }
+  .validation-text strong {
+    font-family: 'Fraunces', serif;
+    font-size: 1.05rem;
+    display: block; margin-bottom: 2px;
+  }
+  .validation-text span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  /* ============ PANEL 4 ============ */
+  .integral-display {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 14px;
+    min-height: 80px;
+    font-size: 1.05rem;
+  }
+  .integral-steps {
+    background: var(--paper);
+    border-left: 3px solid var(--gold);
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    font-size: 0.92rem;
+  }
+  .integral-steps .step-line {
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .integral-steps .step-line:last-child { border-bottom: none; padding-top: 8px; font-weight: 500; }
+
+  .interval-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .area-result {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 14px;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+  }
+  .area-result .area-num {
+    font-weight: 700;
+    color: var(--accent-soft);
+    font-size: 1.4rem;
+  }
+
+  /* ============ EJEMPLOS ============ */
+  .examples-intro {
+    background: var(--paper-dark);
+    border: 1px solid var(--rule);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+  }
+  .examples-intro h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+  }
+  .examples-intro p {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .examples-filter {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 6px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { background: var(--ink); color: var(--paper); }
+  .filter-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .examples-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 1100px) { .examples-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 720px) { .examples-grid { grid-template-columns: 1fr; } }
+
+  .example-card {
+    background: var(--paper-dark);
+    border: 1px solid var(--rule);
+    padding: 18px 20px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .example-card:hover {
+    border-color: var(--ink);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26,26,26,0.08);
+  }
+  .example-card .ex-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 3px 8px;
+    margin-bottom: 10px;
+    color: var(--paper);
+    width: fit-content;
+  }
+  .example-card .ex-tag.case-1 { background: var(--accent); }
+  .example-card .ex-tag.case-2 { background: var(--blue); }
+  .example-card .ex-tag.case-3 { background: var(--green); }
+  .example-card .ex-tag.case-4 { background: var(--gold); }
+  .example-card .ex-program {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+  .example-card .ex-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+  .example-card .ex-formula {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 10px;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .example-card .ex-context {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .example-card .ex-cta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    border-top: 1px solid var(--rule);
+    padding-top: 10px;
+    text-align: right;
+  }
+
+  /* ============ PRÁCTICA ============ */
+  .practice-shell {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 980px) { .practice-shell { grid-template-columns: 1fr; } }
+
+  .practice-sidebar {
+    background: var(--paper-dark);
+    border: 1px solid var(--rule);
+    padding: 20px;
+    height: fit-content;
+    position: sticky;
+    top: 16px;
+  }
+  .practice-sidebar h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    margin-bottom: 4px;
+  }
+  .practice-sidebar p {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .problem-list { list-style: none; }
+  .problem-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--rule);
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    transition: all 0.15s;
+  }
+  .problem-item:hover { background: var(--paper); }
+  .problem-item.active { background: var(--ink); color: var(--paper); }
+  .problem-item .pi-num {
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .problem-item.active .pi-num { color: var(--accent-soft); }
+  .problem-item .pi-status {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--rule);
+    display: inline-block;
+  }
+  .problem-item .pi-status.correct { background: var(--green); }
+  .problem-item .pi-status.incorrect { background: var(--accent); }
+
+  .progress-summary {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .progress-summary .score {
+    font-family: 'Fraunces', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+    margin-top: 4px;
+  }
+
+  .practice-main {
+    background: var(--paper-dark);
+    border: 1px solid var(--rule);
+    padding: 28px;
+  }
+  .problem-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 18px;
+    align-items: baseline;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+  .problem-header .ph-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 2.5rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .problem-header .ph-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.3rem;
+  }
+  .problem-header .ph-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+  }
+
+  .problem-statement {
+    background: var(--paper);
+    border-left: 3px solid var(--blue);
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    font-family: 'Fraunces', serif;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .problem-formula {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 22px;
+    font-size: 1.2rem;
+  }
+
+  .answer-form {
+    display: grid;
+    gap: 18px;
+  }
+  .form-section {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 16px 18px;
+  }
+  .form-section .form-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .case-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 720px) { .case-options { grid-template-columns: repeat(2, 1fr); } }
+  .case-option {
+    background: var(--paper-dark);
+    border: 1px solid var(--rule);
+    padding: 10px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .case-option:hover { background: var(--paper); border-color: var(--ink); }
+  .case-option.selected {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .case-option .co-num {
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 2px;
+  }
+  .case-option.selected .co-num { color: var(--accent-soft); }
+
+  .coef-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .coef-input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .coef-input label {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--ink);
+  }
+  .coef-input input {
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    background: var(--paper-dark);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    transition: all 0.15s;
+  }
+  .coef-input input:focus {
+    outline: none;
+    border-color: var(--ink);
+    background: var(--paper);
+  }
+  .coef-input input.disabled {
+    background: var(--rule);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+  .coef-input .hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .integral-input {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+    align-items: center;
+  }
+  .integral-input .integral-context {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  .integral-input input {
+    padding: 12px 16px;
+    border: 1px solid var(--rule);
+    background: var(--paper-dark);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.05rem;
+    width: 200px;
+    text-align: right;
+  }
+
+  .submit-row {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 12px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    border: 1px solid var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink);
+  }
+  .btn-secondary:hover { background: var(--ink); color: var(--paper); }
+
+  .feedback-card {
+    margin-top: 22px;
+    padding: 20px 24px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    display: none;
+  }
+  .feedback-card.show { display: block; animation: fadeIn 0.3s; }
+  .feedback-card.all-correct { border-color: var(--green); background: rgba(74,107,58,0.04); }
+  .feedback-card.partial { border-color: var(--gold); background: rgba(184,148,31,0.04); }
+  .feedback-card.incorrect { border-color: var(--accent); background: rgba(184,52,26,0.04); }
+
+  .feedback-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 14px;
+  }
+  .feedback-icon {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 1.6rem; font-weight: 700;
+    color: var(--paper);
+  }
+  .feedback-icon.ok { background: var(--green); }
+  .feedback-icon.partial { background: var(--gold); }
+  .feedback-icon.bad { background: var(--accent); }
+  .feedback-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .feedback-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .feedback-score strong {
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .feedback-detail {
+    display: grid;
+    gap: 10px;
+  }
+  .feedback-row {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--paper-dark);
+    border-left: 3px solid var(--rule);
+    align-items: start;
+    font-size: 0.92rem;
+  }
+  .feedback-row.ok { border-left-color: var(--green); }
+  .feedback-row.bad { border-left-color: var(--accent); }
+  .feedback-row .fb-mark {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    color: var(--green);
+    font-size: 1.1rem;
+  }
+  .feedback-row.bad .fb-mark { color: var(--accent); }
+  .feedback-row .fb-text {
+    line-height: 1.5;
+  }
+  .feedback-row .fb-text strong { color: var(--ink); }
+  .feedback-row .fb-text .correct-val {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .feedback-row .fb-text .user-val {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  /* PIE */
+  .pedagogical-note {
+    margin-top: 32px;
+    padding: 20px 24px;
+    background: var(--ink);
+    color: var(--paper);
+    border-left: 6px solid var(--accent);
+  }
+  .pedagogical-note h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+  }
+  .pedagogical-note p {
+    font-size: 0.9rem;
+    color: var(--paper-dark);
+    line-height: 1.65;
+  }
+  .pedagogical-note .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent-soft);
+    margin-bottom: 6px;
+    display: block;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- HEADER                                                       -->
+<!-- ============================================================ -->
+<header class="masthead-block">
+  <div class="masthead">
+    <div class="kicker">Cálculo Integral · Simulador Interactivo</div>
+    <h1>Fracciones Parciales</h1>
+    <div class="subtitle">Un laboratorio de descomposición algebraica para integrar funciones racionales</div>
+  </div>
+  <div class="meta">
+    <div><strong>Cuatro paneles sincronizados</strong></div>
+    <div>Constructor · Heaviside · Verificación · Integral</div>
+    <div>Manipulación directa · Validación numérica</div>
+  </div>
+</header>
+
+<div class="author-credit">
+  <div class="author-name">Diseñado y desarrollado por <strong>Astrid Bolívar</strong> · Gestora Curricular · Ciencias Básicas</div>
+  <div>UCompensar · Asesoría Metodológica</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TABS                                                         -->
+<!-- ============================================================ -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="simulador"><span class="tab-num">01</span>Simulador</button>
+  <button class="tab-btn" data-tab="ejemplos"><span class="tab-num">02</span>Ejemplos interactivos</button>
+  <button class="tab-btn" data-tab="practica"><span class="tab-num">03</span>Práctica evaluada</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 1 — SIMULADOR (idéntico al original)                     -->
+<!-- ============================================================ -->
+<div class="tab-panel active" id="tab-simulador">
+
+  <div class="context-bar">
+    <label>Contexto aplicado</label>
+    <select id="contextSelect">
+      <option value="multimedia">Multimedia · Filtro de audio</option>
+      <option value="software">Software · Caché en cascada</option>
+      <option value="datos">Ciencia de Datos · Densidad racional</option>
+      <option value="sistemas">Sistemas · Tráfico de red</option>
+    </select>
+    <div class="scenario" id="scenarioText"></div>
+  </div>
+
+  <div class="grid">
+
+    <div class="panel" data-num="01 · CONSTRUCTOR">
+      <h2>Constructor algebraico</h2>
+      <div class="panel-sub">Modifica los coeficientes y observa la factorización en tiempo real.</div>
+      <div class="preset-row">
+        <button class="preset-btn active" data-preset="1">Caso 1 · Lineales distintos</button>
+        <button class="preset-btn" data-preset="2">Caso 2 · Lineales repetidos</button>
+        <button class="preset-btn" data-preset="3">Caso 3 · Cuadrático irreducible</button>
+        <button class="preset-btn" data-preset="4">Caso 4 · Mixto</button>
+      </div>
+      <span class="case-badge" id="caseBadge">Caso 1</span>
+      <div class="formula-display" id="formulaDisplay"></div>
+      <div id="sliderContainer"></div>
+      <div class="factorization">
+        <div class="label">Factorización del denominador</div>
+        <div id="factorOutput" style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;"></div>
+      </div>
+    </div>
+
+    <div class="panel" data-num="02 · HEAVISIDE">
+      <h2>Método de cobertura</h2>
+      <div class="panel-sub">Tapa un factor y evalúa la función restante en su raíz para obtener el coeficiente.</div>
+      <div class="mode-toggle">
+        <button class="active" data-mode="visual">Modo visual</button>
+        <button data-mode="algebraic">Visual + álgebra</button>
+      </div>
+      <div class="heaviside-stage" id="heavisideStage"></div>
+      <div id="heavisideExplanation"></div>
+      <table class="coefficient-table" id="coefTable">
+        <thead><tr><th>Coeficiente</th><th>Valor</th><th>Origen</th></tr></thead>
+        <tbody id="coefTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" data-num="03 · VERIFICACIÓN">
+      <h2>Verificación gráfica</h2>
+      <div class="panel-sub">La función original y la suma de fracciones parciales deben coincidir punto a punto.</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-line" style="background: var(--ink);"></div>f(x) original</div>
+        <div class="legend-item"><div class="legend-line" style="background: var(--accent); border-top: 2px dashed var(--accent); height:0;"></div>Σ fracciones parciales</div>
+        <div class="legend-item"><div class="legend-line" style="background: var(--blue-soft); height: 12px; opacity: 0.4;"></div>asíntotas</div>
+      </div>
+      <div class="graph-container">
+        <canvas id="graphCanvas" width="600" height="320"></canvas>
+      </div>
+      <div class="validation-card">
+        <div class="validation-icon ok" id="validationIcon">✓</div>
+        <div class="validation-text">
+          <strong id="validationTitle">Verificación pendiente</strong>
+          <span id="validationDetail">Error máximo en el dominio de prueba</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" data-num="04 · INTEGRAL">
+      <h2>Integral resultante</h2>
+      <div class="panel-sub">Cada fracción parcial se integra de forma elemental. El área se calcula simbólicamente.</div>
+      <div class="integral-display" id="integralDisplay"></div>
+      <div class="integral-steps" id="integralSteps"></div>
+      <div class="interval-controls">
+        <div class="slider-block">
+          <label>Límite inferior <span class="val" id="aVal">2</span></label>
+          <input type="range" id="aSlider" min="-5" max="5" step="0.1" value="2">
+        </div>
+        <div class="slider-block">
+          <label>Límite superior <span class="val" id="bVal">4</span></label>
+          <input type="range" id="bSlider" min="-5" max="5" step="0.1" value="4">
+        </div>
+      </div>
+      <div class="graph-container">
+        <canvas id="areaCanvas" width="600" height="220"></canvas>
+      </div>
+      <div class="area-result">
+        ∫<sub id="aLabel">2</sub><sup id="bLabel">4</sup> f(x) dx = <span class="area-num" id="areaNum">—</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="pedagogical-note">
+    <span class="badge">Nota para el estudiante</span>
+    <h3>Por qué funciona la descomposición</h3>
+    <p>Una fracción racional propia P(x)/Q(x) puede escribirse como suma de fracciones más simples porque el espacio de funciones racionales con denominador Q(x) tiene una base canónica determinada por los factores irreducibles de Q. Cada panel de este simulador refleja una de las cuatro etapas del método: identificar la estructura, calcular coeficientes, verificar la equivalencia algebraica y, finalmente, integrar.</p>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 2 — EJEMPLOS                                             -->
+<!-- ============================================================ -->
+<div class="tab-panel" id="tab-ejemplos">
+  <div class="examples-intro">
+    <div>
+      <h2>Banco de 12 ejemplos aplicados</h2>
+      <p>Cada ejemplo carga sus parámetros directamente en el simulador. Tres por programa, contextualizados al perfil universidad-empresa.</p>
+    </div>
+    <div class="examples-filter">
+      <button class="filter-btn active" data-filter="all">Todos</button>
+      <button class="filter-btn" data-filter="multimedia">Multimedia</button>
+      <button class="filter-btn" data-filter="software">Software</button>
+      <button class="filter-btn" data-filter="datos">Ciencia de Datos</button>
+      <button class="filter-btn" data-filter="sistemas">Sistemas</button>
+    </div>
+  </div>
+  <div class="examples-grid" id="examplesGrid"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 3 — PRÁCTICA                                             -->
+<!-- ============================================================ -->
+<div class="tab-panel" id="tab-practica">
+  <div class="practice-shell">
+    <aside class="practice-sidebar">
+      <h3>Práctica evaluada</h3>
+      <p>8 problemas progresivos. Identifica el caso, calcula coeficientes y evalúa la integral definida.</p>
+      <ul class="problem-list" id="problemList"></ul>
+      <div class="progress-summary">
+        Progreso
+        <span class="score" id="globalScore">0 / 8</span>
+        <div id="globalScoreDetail">Resuelve los 8 problemas para completar.</div>
+      </div>
+    </aside>
+
+    <main class="practice-main" id="practiceMain"></main>
+  </div>
+</div>
+
+</div>
+
+<script>
+// =====================================================================
+// ESTADO GLOBAL
+// =====================================================================
+const STATE = {
+  currentCase: 1,
+  context: 'multimedia',
+  heavisideMode: 'visual',
+  coveredFactor: null,
+  coefficients: {},
+  caseParams: {
+    1: { r1: 1, r2: 3, num_a: 1, num_b: 1 },
+    2: { r: 2, num_a: 1, num_b: 0 },
+    3: { p: 0, q: 4, num_a: 1, num_b: 0 },
+    4: { r1: 1, p: 0, q: 4, num_a: 1, num_b: 0, num_c: 0 }
+  },
+  intervalA: 2,
+  intervalB: 4,
+  practiceState: {} // { problemId: { caseAns, A, B, C, integral, isCorrect, score } }
+};
+
+const SCENARIOS = {
+  multimedia: "Atenuación de un filtro de audio: el factor de transferencia H(s) tiene polos reales que separan la respuesta del sistema en bandas integrables.",
+  software: "Tiempo de respuesta de una caché de dos niveles: la función de decaimiento del hit-rate se descompone en exponenciales aisladas.",
+  datos: "Densidad de probabilidad racional: para calcular P(a < X < b) hay que integrar y eso exige descomponer.",
+  sistemas: "Distribución de paquetes entre dos servidores: el modelo racional se separa en flujos independientes para análisis."
+};
+
+// =====================================================================
+// BANCO DE 12 EJEMPLOS APLICADOS
+// =====================================================================
+const EXAMPLES = [
+  // MULTIMEDIA — 3
+  { id: 'EX-M1', program: 'multimedia', case: 1, title: 'Cruce de filtros pasa-banda',
+    context: 'Dos polos reales separan las bandas grave y aguda; al integrar la respuesta entre frecuencias se obtiene la energía acumulada.',
+    params: { r1: -2, r2: 1, num_a: 1, num_b: 0 } },
+  { id: 'EX-M2', program: 'multimedia', case: 2, title: 'Filtro críticamente amortiguado',
+    context: 'Cuando el factor de calidad iguala el límite, el polo se duplica. La respuesta integrada combina logaritmo y término racional.',
+    params: { r: -1, num_a: 1, num_b: 2 } },
+  { id: 'EX-M3', program: 'multimedia', case: 3, title: 'Resonador de audio (Q alto)',
+    context: 'Un par de polos complejos genera un denominador irreducible; la integral entrega una mezcla de logaritmo y arcotangente.',
+    params: { p: 0, q: 4, num_a: 2, num_b: 1 } },
+
+  // SOFTWARE — 3
+  { id: 'EX-S1', program: 'software', case: 1, title: 'Hit-rate de caché L1+L2',
+    context: 'La probabilidad de acierto en dos niveles independientes da una racional con dos polos reales distintos.',
+    params: { r1: 2, r2: -1, num_a: 1, num_b: 1 } },
+  { id: 'EX-S2', program: 'software', case: 4, title: 'Latencia con cola y servidor',
+    context: 'Un servidor exponencial en serie con un sistema oscilatorio produce un denominador mixto: lineal + cuadrático irreducible.',
+    params: { r1: 1, p: 0, q: 4, num_a: 1, num_b: 0, num_c: 0 } },
+  { id: 'EX-S3', program: 'software', case: 2, title: 'Sistema con realimentación crítica',
+    context: 'Dos componentes idénticos en cascada generan un polo doble. La descomposición separa el efecto inmediato del acumulado.',
+    params: { r: 3, num_a: 2, num_b: -1 } },
+
+  // CIENCIA DE DATOS — 3
+  { id: 'EX-D1', program: 'datos', case: 3, title: 'Densidad tipo Cauchy desplazada',
+    context: 'Para calcular probabilidades en un intervalo se integra la densidad; el cuadrático irreducible exige completar cuadrado.',
+    params: { p: 0, q: 1, num_a: 0, num_b: 1 } },
+  { id: 'EX-D2', program: 'datos', case: 1, title: 'Cociente de log-likelihoods',
+    context: 'La razón entre dos verosimilitudes con soportes disjuntos se descompone en sumandos independientes integrables por separado.',
+    params: { r1: 0, r2: 2, num_a: 1, num_b: -1 } },
+  { id: 'EX-D3', program: 'datos', case: 4, title: 'Función de pérdida con regularización',
+    context: 'Combina un término lineal de sesgo con un cuadrático de varianza. La descomposición revela las contribuciones por separado.',
+    params: { r1: -1, p: 0, q: 2, num_a: 1, num_b: 0, num_c: 1 } },
+
+  // SISTEMAS — 3
+  { id: 'EX-X1', program: 'sistemas', case: 1, title: 'Balanceador de carga 2 servidores',
+    context: 'Distribución de paquetes con tasas distintas: la fracción racional separa las contribuciones de cada servidor.',
+    params: { r1: 1, r2: 4, num_a: 0, num_b: 1 } },
+  { id: 'EX-X2', program: 'sistemas', case: 2, title: 'Cola con servidor saturado',
+    context: 'Cuando un servidor opera al límite de su capacidad, su contribución aparece como polo repetido en el modelo.',
+    params: { r: 1, num_a: 1, num_b: 1 } },
+  { id: 'EX-X3', program: 'sistemas', case: 3, title: 'Pérdida de paquetes con jitter',
+    context: 'El comportamiento oscilatorio del jitter se modela con un cuadrático irreducible: la integral mide la pérdida acumulada.',
+    params: { p: -2, q: 5, num_a: 1, num_b: 0 } }
+];
+
+const CASE_NAMES = {
+  1: 'Lineales distintos',
+  2: 'Lineal repetido',
+  3: 'Cuadrático irreducible',
+  4: 'Mixto'
+};
+
+const PROGRAM_NAMES = {
+  multimedia: 'Multimedia',
+  software: 'Software',
+  datos: 'Ciencia de Datos',
+  sistemas: 'Sistemas'
+};
+
+// =====================================================================
+// BANCO DE 8 PROBLEMAS DE PRÁCTICA (validados con sympy)
+// =====================================================================
+const PROBLEMS = [
+  { id: 'P1', case: 1, statement: 'Identifica el caso, descompón en fracciones parciales y calcula la integral definida.',
+    formula: '\\dfrac{x + 5}{(x - 1)(x + 2)}',
+    answer: { case: 1, A: 2, B: -1, integral: 1.0498 },
+    interval: [3, 5],
+    coefHints: ['A · coef. de 1/(x − 1)', 'B · coef. de 1/(x + 2)', '—'] },
+
+  { id: 'P2', case: 1, statement: 'Descomposición en fracciones parciales con factores lineales distintos.',
+    formula: '\\dfrac{2x - 1}{(x - 3)(x + 1)}',
+    answer: { case: 1, A: 1.25, B: 0.75, integral: 1.6256 },
+    interval: [4, 6],
+    coefHints: ['A · coef. de 1/(x − 3)', 'B · coef. de 1/(x + 1)', '—'] },
+
+  { id: 'P3', case: 2, statement: 'Identifica el caso (pista: hay un factor repetido) y resuelve.',
+    formula: '\\dfrac{x}{(x - 3)^2}',
+    answer: { case: 2, A: 1, B: 3, integral: 3.0986 },
+    interval: [4, 6],
+    coefHints: ['A · coef. de 1/(x − 3)', 'B · coef. de 1/(x − 3)²', '—'] },
+
+  { id: 'P4', case: 2, statement: 'Repetido con numerador no trivial.',
+    formula: '\\dfrac{2x + 1}{(x - 1)^2}',
+    answer: { case: 2, A: 2, B: 3, integral: 4.1972 },
+    interval: [2, 4],
+    coefHints: ['A · coef. de 1/(x − 1)', 'B · coef. de 1/(x − 1)²', '—'] },
+
+  { id: 'P5', case: 3, statement: 'Cuadrático irreducible. Verifica que el discriminante sea negativo antes de proceder.',
+    formula: '\\dfrac{x + 1}{x^2 + 4}',
+    answer: { case: 3, A: 1, B: 1, integral: 0.7393 },
+    interval: [0, 2],
+    coefHints: ['A · coef. de x del numerador', 'B · término constante', '—'] },
+
+  { id: 'P6', case: 3, statement: 'Cuadrático irreducible con discriminante más amplio.',
+    formula: '\\dfrac{2x - 3}{x^2 + 9}',
+    answer: { case: 3, A: 2, B: -3, integral: -0.0923 },
+    interval: [0, 3],
+    coefHints: ['A · coef. de x del numerador', 'B · término constante', '—'] },
+
+  { id: 'P7', case: 4, statement: 'Caso mixto: factor lineal multiplicado por cuadrático irreducible.',
+    formula: '\\dfrac{x^2}{(x - 2)(x^2 + 1)}',
+    answer: { case: 4, A: 0.8, B: 0.2, C: 0.4, integral: 1.0242 },
+    interval: [3, 5],
+    coefHints: ['A · coef. de 1/(x − 2)', 'B · coef. de x en (Bx+C)/(x²+1)', 'C · constante en (Bx+C)/(x²+1)'] },
+
+  { id: 'P8', case: 4, statement: 'Mixto. Atención a los signos al identificar coeficientes.',
+    formula: '\\dfrac{x + 3}{(x - 1)(x^2 + 4)}',
+    answer: { case: 4, A: 0.8, B: -0.8, C: 0.2, integral: 0.5445 },
+    interval: [2, 4],
+    coefHints: ['A · coef. de 1/(x − 1)', 'B · coef. de x en (Bx+C)/(x²+4)', 'C · constante en (Bx+C)/(x²+4)'] }
+];
+
+// =====================================================================
+// TABS — switching
+// =====================================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'ejemplos') renderExamples();
+    if (btn.dataset.tab === 'practica') initPractice();
+    setTimeout(() => { if (window.MathJax) MathJax.typesetPromise(); }, 50);
+  });
+});
+
+// =====================================================================
+// CONTEXT
+// =====================================================================
+document.getElementById('contextSelect').addEventListener('change', (e) => {
+  STATE.context = e.target.value;
+  document.getElementById('scenarioText').textContent = SCENARIOS[STATE.context];
+});
+document.getElementById('scenarioText').textContent = SCENARIOS.multimedia;
+
+// =====================================================================
+// SLIDERS
+// =====================================================================
+function buildSliders(caseNum) {
+  const container = document.getElementById('sliderContainer');
+  container.innerHTML = '';
+  const p = STATE.caseParams[caseNum];
+
+  function addSlider(id, label, min, max, step, value) {
+    const block = document.createElement('div');
+    block.className = 'slider-block';
+    block.innerHTML = `
+      <label>${label} <span class="val" id="${id}_val">${value}</span></label>
+      <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${value}">
+    `;
+    container.appendChild(block);
+    document.getElementById(id).addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      document.getElementById(id+'_val').textContent = v;
+      p[id] = v;
+      updateAll();
+    });
+  }
+
+  if (caseNum === 1) {
+    addSlider('r1', 'Raíz r₁  (factor x − r₁)', -4, 4, 1, p.r1);
+    addSlider('r2', 'Raíz r₂  (factor x − r₂)', -4, 4, 1, p.r2);
+    addSlider('num_a', 'Numerador: coeficiente de x', -3, 3, 1, p.num_a);
+    addSlider('num_b', 'Numerador: término constante', -5, 5, 1, p.num_b);
+  } else if (caseNum === 2) {
+    addSlider('r', 'Raíz repetida r  (factor (x − r)²)', -4, 4, 1, p.r);
+    addSlider('num_a', 'Numerador: coeficiente de x', -3, 3, 1, p.num_a);
+    addSlider('num_b', 'Numerador: término constante', -5, 5, 1, p.num_b);
+  } else if (caseNum === 3) {
+    addSlider('p', 'Coef. lineal del denominador (p)', -2, 2, 1, p.p);
+    addSlider('q', 'Término constante (q, debe dar Δ < 0)', 1, 9, 1, p.q);
+    addSlider('num_a', 'Numerador: coef. de x', -3, 3, 1, p.num_a);
+    addSlider('num_b', 'Numerador: constante', -5, 5, 1, p.num_b);
+  } else if (caseNum === 4) {
+    addSlider('r1', 'Raíz lineal r₁', -4, 4, 1, p.r1);
+    addSlider('p', 'Coef. lineal del cuadrático', -2, 2, 1, p.p);
+    addSlider('q', 'Constante del cuadrático', 1, 9, 1, p.q);
+    addSlider('num_a', 'Numerador: coef. de x²', -2, 2, 1, p.num_a);
+    addSlider('num_b', 'Numerador: coef. de x', -3, 3, 1, p.num_b);
+    addSlider('num_c', 'Numerador: constante', -5, 5, 1, p.num_c);
+  }
+}
+
+// =====================================================================
+// FUNCIONES (idéntico a versión validada)
+// =====================================================================
+function buildFunctions(caseNum) {
+  const p = STATE.caseParams[caseNum];
+
+  if (caseNum === 1) {
+    if (p.r1 === p.r2) return null;
+    const A = (p.num_a * p.r1 + p.num_b) / (p.r1 - p.r2);
+    const B = (p.num_a * p.r2 + p.num_b) / (p.r2 - p.r1);
+    return {
+      caseNum: 1,
+      original: (x) => (p.num_a * x + p.num_b) / ((x - p.r1) * (x - p.r2)),
+      decomposed: (x) => A / (x - p.r1) + B / (x - p.r2),
+      coefficients: { A, B }, poles: [p.r1, p.r2],
+      latex: `\\dfrac{${formatLinear(p.num_a, p.num_b)}}{(x ${signedRoot(p.r1)})(x ${signedRoot(p.r2)})}`,
+      decompositionLatex: `\\dfrac{A}{x ${signedRoot(p.r1)}} + \\dfrac{B}{x ${signedRoot(p.r2)}}`,
+      params: p
+    };
+  }
+  if (caseNum === 2) {
+    const A = p.num_a;
+    const B = p.num_a * p.r + p.num_b;
+    return {
+      caseNum: 2,
+      original: (x) => (p.num_a * x + p.num_b) / Math.pow(x - p.r, 2),
+      decomposed: (x) => A / (x - p.r) + B / Math.pow(x - p.r, 2),
+      coefficients: { A, B }, poles: [p.r],
+      latex: `\\dfrac{${formatLinear(p.num_a, p.num_b)}}{(x ${signedRoot(p.r)})^2}`,
+      decompositionLatex: `\\dfrac{A}{x ${signedRoot(p.r)}} + \\dfrac{B}{(x ${signedRoot(p.r)})^2}`,
+      params: p
+    };
+  }
+  if (caseNum === 3) {
+    const disc = p.p * p.p - 4 * p.q;
+    if (disc >= 0) return null;
+    return {
+      caseNum: 3,
+      original: (x) => (p.num_a * x + p.num_b) / (x*x + p.p*x + p.q),
+      decomposed: (x) => (p.num_a * x + p.num_b) / (x*x + p.p*x + p.q),
+      coefficients: { A: p.num_a, B: p.num_b }, poles: [],
+      latex: `\\dfrac{${formatLinear(p.num_a, p.num_b)}}{x^2 ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')}}`,
+      decompositionLatex: `\\dfrac{Ax + B}{x^2 ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')}}`,
+      params: p
+    };
+  }
+  if (caseNum === 4) {
+    const disc = p.p * p.p - 4 * p.q;
+    if (disc >= 0) return null;
+    const Pr1 = p.num_a * p.r1 * p.r1 + p.num_b * p.r1 + p.num_c;
+    const denom_at_r1 = p.r1 * p.r1 + p.p * p.r1 + p.q;
+    const A = Pr1 / denom_at_r1;
+    const B = p.num_a - A;
+    let C;
+    if (p.r1 !== 0) C = (A * p.q - p.num_c) / p.r1;
+    else C = p.num_b - A * p.p;
+    return {
+      caseNum: 4,
+      original: (x) => (p.num_a*x*x + p.num_b*x + p.num_c) / ((x - p.r1) * (x*x + p.p*x + p.q)),
+      decomposed: (x) => A/(x - p.r1) + (B*x + C)/(x*x + p.p*x + p.q),
+      coefficients: { A, B, C }, poles: [p.r1],
+      latex: `\\dfrac{${formatQuadratic(p.num_a, p.num_b, p.num_c)}}{(x ${signedRoot(p.r1)})(x^2 ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')})}`,
+      decompositionLatex: `\\dfrac{A}{x ${signedRoot(p.r1)}} + \\dfrac{Bx + C}{x^2 ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')}}`,
+      params: p
+    };
+  }
+}
+
+// =====================================================================
+// FORMATEO
+// =====================================================================
+function signedRoot(r) { if (r === 0) return ''; return r > 0 ? `- ${r}` : `+ ${Math.abs(r)}`; }
+function signedTerm(c, varStr) {
+  if (c === 0) return '';
+  if (c === 1 && varStr) return `+ ${varStr}`;
+  if (c === -1 && varStr) return `- ${varStr}`;
+  return c > 0 ? `+ ${c}${varStr}` : `- ${Math.abs(c)}${varStr}`;
+}
+function formatLinear(a, b) {
+  if (a === 0 && b === 0) return '0';
+  if (a === 0) return `${b}`;
+  let s = a === 1 ? 'x' : a === -1 ? '-x' : `${a}x`;
+  if (b !== 0) s += b > 0 ? ` + ${b}` : ` - ${Math.abs(b)}`;
+  return s;
+}
+function formatQuadratic(a, b, c) {
+  let parts = [];
+  if (a !== 0) parts.push(a === 1 ? 'x^2' : a === -1 ? '-x^2' : `${a}x^2`);
+  if (b !== 0) parts.push((parts.length && b > 0 ? '+ ' : '') + (b === 1 ? 'x' : b === -1 ? '-x' : `${b}x`).replace('-', '- '));
+  if (c !== 0) parts.push((parts.length && c > 0 ? '+ ' : '') + (c < 0 ? `- ${Math.abs(c)}` : `${c}`));
+  if (!parts.length) return '0';
+  return parts.join(' ').replace(/\+ -/g, '- ');
+}
+function fmt(num) {
+  if (Math.abs(num) < 1e-10) return '0';
+  if (Number.isInteger(num)) return num.toString();
+  return num.toFixed(3).replace(/\.?0+$/, '');
+}
+
+// =====================================================================
+// UPDATE ALL
+// =====================================================================
+function updateAll() {
+  const fn = buildFunctions(STATE.currentCase);
+  if (!fn) {
+    document.getElementById('formulaDisplay').innerHTML =
+      '<em style="color: var(--accent);">Combinación inválida (raíces colisionando o discriminante ≥ 0). Ajusta los sliders.</em>';
+    return;
+  }
+  STATE.currentFn = fn;
+  STATE.coefficients = fn.coefficients;
+  updatePanel1(fn);
+  updatePanel2(fn);
+  updatePanel3(fn);
+  updatePanel4(fn);
+  if (window.MathJax) MathJax.typesetPromise && MathJax.typesetPromise();
+}
+
+function updatePanel1(fn) {
+  document.getElementById('formulaDisplay').innerHTML = `\\[ f(x) = ${fn.latex} \\]`;
+  document.getElementById('factorOutput').textContent = describeFactorization(fn);
+  const badge = document.getElementById('caseBadge');
+  badge.textContent = `Caso ${fn.caseNum} · ${CASE_NAMES[fn.caseNum]}`;
+  badge.className = `case-badge case-${fn.caseNum}`;
+}
+function describeFactorization(fn) {
+  const p = fn.params;
+  if (fn.caseNum === 1) return `Q(x) = (x ${signedRoot(p.r1)})(x ${signedRoot(p.r2)})  →  raíces: ${p.r1}, ${p.r2}`;
+  if (fn.caseNum === 2) return `Q(x) = (x ${signedRoot(p.r)})²  →  raíz doble: ${p.r}`;
+  if (fn.caseNum === 3) {
+    const disc = p.p*p.p - 4*p.q;
+    return `Q(x) = x² ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')}  →  Δ = ${disc} (irreducible en ℝ)`;
+  }
+  if (fn.caseNum === 4) {
+    const disc = p.p*p.p - 4*p.q;
+    return `Q(x) = (x ${signedRoot(p.r1)})(x² ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')})  →  raíz: ${p.r1}; cuadrático Δ = ${disc}`;
+  }
+}
+
+function updatePanel2(fn) {
+  const stage = document.getElementById('heavisideStage');
+  const tbody = document.getElementById('coefTableBody');
+  if (fn.caseNum === 1) {
+    const p = fn.params;
+    stage.innerHTML = `
+      <div style="font-family: 'Fraunces', serif; font-size: 1rem; color: var(--muted); margin-bottom: 12px;">
+        Haz clic sobre un factor del denominador para "taparlo" y evaluar el resto en su raíz.
+      </div>
+      <div style="font-size: 1.3rem; font-family: 'JetBrains Mono', monospace;">
+        <span style="vertical-align:middle;">f(x) = </span>
+        <div style="display:inline-block; vertical-align:middle; text-align:center;">
+          <div style="border-bottom: 2px solid var(--ink); padding: 0 12px 4px;">${formatLinear(p.num_a, p.num_b)}</div>
+          <div style="padding-top: 4px;">
+            <span class="factor-clickable" data-factor="0">(x ${signedRoot(p.r1)})</span><span class="factor-clickable" data-factor="1">(x ${signedRoot(p.r2)})</span>
+          </div>
+        </div>
+      </div>
+    `;
+    attachFactorListeners(fn);
+    renderHeavisideExplanation(fn);
+    tbody.innerHTML = `
+      <tr><td>A</td><td>${fmt(fn.coefficients.A)}</td><td>tapar (x ${signedRoot(p.r1)}), evaluar en x = ${p.r1}</td></tr>
+      <tr><td>B</td><td>${fmt(fn.coefficients.B)}</td><td>tapar (x ${signedRoot(p.r2)}), evaluar en x = ${p.r2}</td></tr>
+    `;
+  } else if (fn.caseNum === 2) {
+    const p = fn.params;
+    stage.innerHTML = `
+      <div style="font-family: 'Fraunces', serif; font-size: 1rem; color: var(--muted); margin-bottom: 12px;">
+        Para raíz repetida, B se obtiene tapando (x − r)². A requiere identificación de coeficientes.
+      </div>
+      <div style="font-size: 1.3rem; font-family: 'JetBrains Mono', monospace;">
+        <span style="vertical-align:middle;">f(x) = </span>
+        <div style="display:inline-block; vertical-align:middle; text-align:center;">
+          <div style="border-bottom: 2px solid var(--ink); padding: 0 12px 4px;">${formatLinear(p.num_a, p.num_b)}</div>
+          <div style="padding-top: 4px;">
+            <span class="factor-clickable" data-factor="0">(x ${signedRoot(p.r)})²</span>
+          </div>
+        </div>
+      </div>
+    `;
+    attachFactorListeners(fn);
+    renderHeavisideExplanation(fn);
+    tbody.innerHTML = `
+      <tr><td>A</td><td>${fmt(fn.coefficients.A)}</td><td>identificación de coeficientes</td></tr>
+      <tr><td>B</td><td>${fmt(fn.coefficients.B)}</td><td>tapar (x ${signedRoot(p.r)})², evaluar en x = ${p.r}</td></tr>
+    `;
+  } else if (fn.caseNum === 3) {
+    stage.innerHTML = `
+      <div style="font-family: 'Fraunces', serif; color: var(--muted); padding: 24px;">
+        El denominador es <em>irreducible</em> en ℝ. La fracción ya está en su forma parcial canónica:
+        el numerador (Ax + B) se identifica directamente con el numerador original.
+      </div>
+    `;
+    document.getElementById('heavisideExplanation').innerHTML = '';
+    tbody.innerHTML = `
+      <tr><td>A</td><td>${fmt(fn.coefficients.A)}</td><td>coef. de x del numerador</td></tr>
+      <tr><td>B</td><td>${fmt(fn.coefficients.B)}</td><td>término constante del numerador</td></tr>
+    `;
+  } else if (fn.caseNum === 4) {
+    const p = fn.params;
+    stage.innerHTML = `
+      <div style="font-family: 'Fraunces', serif; font-size: 1rem; color: var(--muted); margin-bottom: 12px;">
+        Tapa el factor lineal para A. Para B y C: identificación de coeficientes en P(x) = A(x²+px+q) + (Bx+C)(x − r₁).
+      </div>
+      <div style="font-size: 1.2rem; font-family: 'JetBrains Mono', monospace;">
+        <div style="display:inline-block; vertical-align:middle; text-align:center;">
+          <div style="border-bottom: 2px solid var(--ink); padding: 0 12px 4px;">${formatQuadratic(p.num_a, p.num_b, p.num_c)}</div>
+          <div style="padding-top: 4px;">
+            <span class="factor-clickable" data-factor="0">(x ${signedRoot(p.r1)})</span>(x² ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')})
+          </div>
+        </div>
+      </div>
+    `;
+    attachFactorListeners(fn);
+    renderHeavisideExplanation(fn);
+    tbody.innerHTML = `
+      <tr><td>A</td><td>${fmt(fn.coefficients.A)}</td><td>tapar (x ${signedRoot(p.r1)}), evaluar en x = ${p.r1}</td></tr>
+      <tr><td>B</td><td>${fmt(fn.coefficients.B)}</td><td>identificación: coef. de x²</td></tr>
+      <tr><td>C</td><td>${fmt(fn.coefficients.C)}</td><td>identificación: término constante</td></tr>
+    `;
+  }
+}
+
+function attachFactorListeners(fn) {
+  document.querySelectorAll('.factor-clickable').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.factor-clickable').forEach(e => e.classList.remove('covered'));
+      el.classList.add('covered');
+      STATE.coveredFactor = parseInt(el.dataset.factor);
+      renderHeavisideExplanation(fn);
+    });
+  });
+}
+
+function renderHeavisideExplanation(fn) {
+  const expl = document.getElementById('heavisideExplanation');
+  const idx = STATE.coveredFactor;
+  const algebraic = STATE.heavisideMode === 'algebraic';
+  if (idx === null || idx === undefined) {
+    expl.innerHTML = '<div class="heaviside-result"><div class="step">PASO PENDIENTE</div>Haz clic sobre un factor para ver el cálculo.</div>';
+    return;
+  }
+  const p = fn.params;
+  if (fn.caseNum === 1) {
+    const r = idx === 0 ? p.r1 : p.r2;
+    const coefName = idx === 0 ? 'A' : 'B';
+    const numerVal = p.num_a * r + p.num_b;
+    const otherR = idx === 0 ? p.r2 : p.r1;
+    const denomVal = r - otherR;
+    const result = numerVal / denomVal;
+    let html = `<div class="heaviside-result">
+      <div class="step">PASO 1 · COBERTURA</div>
+      Tapamos el factor <strong>(x ${signedRoot(r)})</strong>. Lo que queda se evalúa en <strong>x = ${r}</strong>.
+    </div>`;
+    if (algebraic) {
+      html += `<div class="heaviside-result">
+        <div class="step">PASO 2 · EVALUACIÓN</div>
+        ${coefName} = (${p.num_a}·${r} ${signedTerm(p.num_b,'')}) / (${r} ${signedRoot(otherR)}) = ${fmt(numerVal)} / ${fmt(denomVal)} = <strong style="color: var(--accent);">${fmt(result)}</strong>
+      </div>`;
+    } else {
+      html += `<div class="heaviside-result"><div class="step">RESULTADO</div>${coefName} = <strong style="color: var(--accent); font-size: 1.1rem;">${fmt(result)}</strong></div>`;
+    }
+    expl.innerHTML = html;
+  } else if (fn.caseNum === 2) {
+    const r = p.r;
+    const numerVal = p.num_a * r + p.num_b;
+    let html = `<div class="heaviside-result"><div class="step">PASO 1 · COBERTURA DE (x − r)²</div>Tapamos (x ${signedRoot(r)})². El numerador se evalúa en x = ${r}.</div>`;
+    if (algebraic) {
+      html += `<div class="heaviside-result"><div class="step">PASO 2 · EVALUACIÓN</div>B = ${p.num_a}·${r} ${signedTerm(p.num_b,'')} = <strong style="color: var(--accent);">${fmt(numerVal)}</strong></div>
+      <div class="heaviside-result"><div class="step">PASO 3 · A POR IDENTIFICACIÓN</div>En P(x) = A(x − ${r}) + B, A = ${fmt(p.num_a)}.</div>`;
+    } else {
+      html += `<div class="heaviside-result"><div class="step">RESULTADO</div>B = <strong style="color: var(--accent);">${fmt(numerVal)}</strong> · A = <strong style="color: var(--accent);">${fmt(p.num_a)}</strong></div>`;
+    }
+    expl.innerHTML = html;
+  } else if (fn.caseNum === 4) {
+    const r = p.r1;
+    const Pr = p.num_a*r*r + p.num_b*r + p.num_c;
+    const denomQuad = r*r + p.p*r + p.q;
+    let html = `<div class="heaviside-result"><div class="step">PASO 1 · COBERTURA DEL LINEAL</div>Tapamos (x ${signedRoot(r)}) y evaluamos en x = ${r}.</div>`;
+    if (algebraic) {
+      html += `<div class="heaviside-result"><div class="step">PASO 2 · EVALUACIÓN</div>A = P(${r}) / (${r}² ${signedTerm(p.p,'·'+r)} ${signedTerm(p.q,'')}) = ${fmt(Pr)} / ${fmt(denomQuad)} = <strong style="color: var(--accent);">${fmt(fn.coefficients.A)}</strong></div>
+      <div class="heaviside-result"><div class="step">PASO 3 · B y C POR IDENTIFICACIÓN</div>Coef. de x²: ${fmt(p.num_a)} = A + B → B = ${fmt(fn.coefficients.B)}<br>Constante: ${fmt(p.num_c)} = A·${p.q} − C·${r} → C = ${fmt(fn.coefficients.C)}</div>`;
+    } else {
+      html += `<div class="heaviside-result"><div class="step">RESULTADO</div>A = <strong style="color: var(--accent);">${fmt(fn.coefficients.A)}</strong> · B = <strong style="color: var(--accent);">${fmt(fn.coefficients.B)}</strong> · C = <strong style="color: var(--accent);">${fmt(fn.coefficients.C)}</strong></div>`;
+    }
+    expl.innerHTML = html;
+  }
+}
+
+function updatePanel3(fn) {
+  drawComparisonGraph(fn);
+  let maxErr = 0, n = 0;
+  for (let x = -8; x <= 8; x += 0.08) {
+    const skip = fn.poles.some(p => Math.abs(x - p) < 0.15);
+    if (skip) continue;
+    const a = fn.original(x), b = fn.decomposed(x);
+    if (!isFinite(a) || !isFinite(b)) continue;
+    const err = Math.abs(a - b);
+    if (err > maxErr) maxErr = err;
+    n++;
+  }
+  const icon = document.getElementById('validationIcon');
+  const title = document.getElementById('validationTitle');
+  const detail = document.getElementById('validationDetail');
+  if (maxErr < 1e-6) {
+    icon.className = 'validation-icon ok'; icon.textContent = '✓';
+    title.textContent = 'Descomposición correcta';
+    detail.textContent = `Error máximo en ${n} puntos: ${maxErr.toExponential(2)}`;
+  } else if (maxErr < 1e-3) {
+    icon.className = 'validation-icon warn'; icon.textContent = '~';
+    title.textContent = 'Correcta (con error de redondeo)';
+    detail.textContent = `Error máximo: ${maxErr.toExponential(2)}`;
+  } else {
+    icon.className = 'validation-icon bad'; icon.textContent = '✗';
+    title.textContent = 'Discrepancia detectada';
+    detail.textContent = `Error máximo: ${maxErr.toExponential(2)}`;
+  }
+}
+
+function drawComparisonGraph(fn) {
+  const canvas = document.getElementById('graphCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const xMin = -7, xMax = 7, yMin = -6, yMax = 6;
+  const toX = x => ((x - xMin) / (xMax - xMin)) * W;
+  const toY = y => H - ((y - yMin) / (yMax - yMin)) * H;
+  ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 1;
+  for (let x = Math.ceil(xMin); x <= xMax; x++) { ctx.beginPath(); ctx.moveTo(toX(x), 0); ctx.lineTo(toX(x), H); ctx.stroke(); }
+  for (let y = Math.ceil(yMin); y <= yMax; y++) { ctx.beginPath(); ctx.moveTo(0, toY(y)); ctx.lineTo(W, toY(y)); ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, toY(0)); ctx.lineTo(W, toY(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(toX(0), 0); ctx.lineTo(toX(0), H); ctx.stroke();
+  ctx.strokeStyle = 'rgba(107,143,181,0.5)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+  fn.poles.forEach(p => { ctx.beginPath(); ctx.moveTo(toX(p), 0); ctx.lineTo(toX(p), H); ctx.stroke(); });
+  ctx.setLineDash([]);
+  drawFunction(ctx, fn.original, fn.poles, toX, toY, xMin, xMax, yMin, yMax, '#1a1a1a', 2.5, []);
+  drawFunction(ctx, fn.decomposed, fn.poles, toX, toY, xMin, xMax, yMin, yMax, '#b8341a', 2, [6,4]);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.font = '11px JetBrains Mono';
+  ctx.fillText('x', W - 12, toY(0) - 6);
+  ctx.fillText('y', toX(0) + 6, 12);
+}
+
+function drawFunction(ctx, f, poles, toX, toY, xMin, xMax, yMin, yMax, color, width, dash) {
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dash);
+  ctx.beginPath();
+  let started = false;
+  const step = 0.02;
+  for (let x = xMin; x <= xMax; x += step) {
+    const nearPole = poles.some(p => Math.abs(x - p) < 0.06);
+    if (nearPole) { started = false; continue; }
+    const y = f(x);
+    if (!isFinite(y) || y < yMin - 2 || y > yMax + 2) { started = false; continue; }
+    if (!started) { ctx.moveTo(toX(x), toY(y)); started = true; }
+    else { ctx.lineTo(toX(x), toY(y)); }
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function updatePanel4(fn) {
+  document.getElementById('integralDisplay').innerHTML = `\\[ \\int ${fn.latex}\\,dx = \\int \\left( ${fn.decompositionLatex} \\right) dx \\]`;
+  document.getElementById('integralSteps').innerHTML = buildIntegralSteps(fn);
+  drawAreaGraph(fn);
+  computeArea(fn);
+}
+
+function buildIntegralSteps(fn) {
+  const c = fn.coefficients;
+  const p = fn.params;
+  let lines = [];
+  if (fn.caseNum === 1) {
+    lines.push(`<div class="step-line">∫ A/(x − r₁) dx = A · ln|x − r₁|</div>`);
+    lines.push(`<div class="step-line">∫ B/(x − r₂) dx = B · ln|x − r₂|</div>`);
+    lines.push(`<div class="step-line"><strong>F(x) = ${fmt(c.A)} · ln|x ${signedRoot(p.r1)}| + ${fmt(c.B)} · ln|x ${signedRoot(p.r2)}| + C</strong></div>`);
+  } else if (fn.caseNum === 2) {
+    lines.push(`<div class="step-line">∫ A/(x − r) dx = A · ln|x − r|</div>`);
+    lines.push(`<div class="step-line">∫ B/(x − r)² dx = −B/(x − r)</div>`);
+    lines.push(`<div class="step-line"><strong>F(x) = ${fmt(c.A)} · ln|x ${signedRoot(p.r)}| − ${fmt(c.B)}/(x ${signedRoot(p.r)}) + C</strong></div>`);
+  } else if (fn.caseNum === 3) {
+    const h = p.p/2;
+    const k2 = p.q - h*h;
+    const k = Math.sqrt(k2);
+    lines.push(`<div class="step-line">Completar cuadrado: x² ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')} = (x ${signedRoot(-h)})² + ${fmt(k2)}</div>`);
+    lines.push(`<div class="step-line">Separar: (Ax+B) = (A/2)·(2x + p) + (B − Ap/2)</div>`);
+    const coefArctan = (c.B - c.A * p.p / 2) / k;
+    lines.push(`<div class="step-line"><strong>F(x) = ${fmt(c.A/2)} · ln(x² ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')}) + ${fmt(coefArctan)} · arctan((x ${signedRoot(-h)})/${fmt(k)}) + C</strong></div>`);
+  } else if (fn.caseNum === 4) {
+    lines.push(`<div class="step-line">∫ A/(x − r₁) dx = A · ln|x − r₁|</div>`);
+    lines.push(`<div class="step-line">∫ (Bx+C)/(x²+px+q) dx → completar cuadrado y separar</div>`);
+    const h = p.p/2;
+    const k2 = p.q - h*h;
+    const k = Math.sqrt(k2);
+    const coefArctan = (c.C - c.B * p.p / 2) / k;
+    lines.push(`<div class="step-line"><strong>F(x) = ${fmt(c.A)}·ln|x ${signedRoot(p.r1)}| + ${fmt(c.B/2)}·ln(x² ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')}) + ${fmt(coefArctan)}·arctan((x ${signedRoot(-h)})/${fmt(k)}) + C</strong></div>`);
+  }
+  return lines.join('');
+}
+
+function antiderivative(fn, x) {
+  const c = fn.coefficients;
+  const p = fn.params;
+  if (fn.caseNum === 1) return c.A * Math.log(Math.abs(x - p.r1)) + c.B * Math.log(Math.abs(x - p.r2));
+  if (fn.caseNum === 2) return c.A * Math.log(Math.abs(x - p.r)) - c.B / (x - p.r);
+  if (fn.caseNum === 3) {
+    const h = p.p/2;
+    const k = Math.sqrt(p.q - h*h);
+    const coefArctan = (c.B - c.A * p.p / 2) / k;
+    return (c.A/2) * Math.log(x*x + p.p*x + p.q) + coefArctan * Math.atan((x + h)/k);
+  }
+  if (fn.caseNum === 4) {
+    const h = p.p/2;
+    const k = Math.sqrt(p.q - h*h);
+    const coefArctan = (c.C - c.B * p.p / 2) / k;
+    return c.A * Math.log(Math.abs(x - p.r1))
+         + (c.B/2) * Math.log(x*x + p.p*x + p.q)
+         + coefArctan * Math.atan((x + h)/k);
+  }
+  return NaN;
+}
+
+function computeArea(fn) {
+  const a = STATE.intervalA, b = STATE.intervalB;
+  const containsPole = fn.poles.some(p => (a < p && p < b) || (b < p && p < a));
+  const areaEl = document.getElementById('areaNum');
+  document.getElementById('aLabel').textContent = a;
+  document.getElementById('bLabel').textContent = b;
+  if (containsPole) {
+    areaEl.textContent = 'integral impropia';
+    areaEl.style.fontSize = '0.9rem';
+    return;
+  }
+  const Fa = antiderivative(fn, a);
+  const Fb = antiderivative(fn, b);
+  const area = Fb - Fa;
+  areaEl.textContent = isFinite(area) ? fmt(area) : '—';
+  areaEl.style.fontSize = '1.4rem';
+}
+
+function drawAreaGraph(fn) {
+  const canvas = document.getElementById('areaCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const xMin = -7, xMax = 7, yMin = -4, yMax = 4;
+  const toX = x => ((x - xMin) / (xMax - xMin)) * W;
+  const toY = y => H - ((y - yMin) / (yMax - yMin)) * H;
+  ctx.strokeStyle = 'rgba(0,0,0,0.05)'; ctx.lineWidth = 1;
+  for (let x = Math.ceil(xMin); x <= xMax; x++) { ctx.beginPath(); ctx.moveTo(toX(x), 0); ctx.lineTo(toX(x), H); ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, toY(0)); ctx.lineTo(W, toY(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(toX(0), 0); ctx.lineTo(toX(0), H); ctx.stroke();
+  const a = Math.min(STATE.intervalA, STATE.intervalB);
+  const b = Math.max(STATE.intervalA, STATE.intervalB);
+  const containsPole = fn.poles.some(p => a < p && p < b);
+  if (!containsPole) {
+    ctx.fillStyle = 'rgba(184,52,26,0.18)';
+    ctx.beginPath();
+    ctx.moveTo(toX(a), toY(0));
+    let firstPoint = true;
+    for (let x = a; x <= b; x += 0.02) {
+      const y = fn.original(x);
+      if (!isFinite(y)) continue;
+      const yClamped = Math.max(yMin, Math.min(yMax, y));
+      if (firstPoint) { ctx.lineTo(toX(x), toY(yClamped)); firstPoint = false; }
+      else { ctx.lineTo(toX(x), toY(yClamped)); }
+    }
+    ctx.lineTo(toX(b), toY(0));
+    ctx.closePath();
+    ctx.fill();
+  }
+  drawFunction(ctx, fn.original, fn.poles, toX, toY, xMin, xMax, yMin, yMax, '#1a1a1a', 2.2, []);
+  ctx.strokeStyle = '#b8341a'; ctx.lineWidth = 2; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(toX(a), 0); ctx.lineTo(toX(a), H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(toX(b), 0); ctx.lineTo(toX(b), H); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#b8341a'; ctx.font = 'bold 11px JetBrains Mono';
+  ctx.fillText('a=' + a, toX(a) + 4, 14);
+  ctx.fillText('b=' + b, toX(b) + 4, 28);
+}
+
+// =====================================================================
+// EJEMPLOS
+// =====================================================================
+function exampleLatex(ex) {
+  const p = ex.params;
+  if (ex.case === 1) return `\\dfrac{${formatLinear(p.num_a, p.num_b)}}{(x ${signedRoot(p.r1)})(x ${signedRoot(p.r2)})}`;
+  if (ex.case === 2) return `\\dfrac{${formatLinear(p.num_a, p.num_b)}}{(x ${signedRoot(p.r)})^2}`;
+  if (ex.case === 3) return `\\dfrac{${formatLinear(p.num_a, p.num_b)}}{x^2 ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')}}`;
+  if (ex.case === 4) return `\\dfrac{${formatQuadratic(p.num_a, p.num_b, p.num_c)}}{(x ${signedRoot(p.r1)})(x^2 ${signedTerm(p.p,'x')} ${signedTerm(p.q,'')})}`;
+}
+
+let currentFilter = 'all';
+
+function renderExamples() {
+  const grid = document.getElementById('examplesGrid');
+  const filtered = currentFilter === 'all' ? EXAMPLES : EXAMPLES.filter(e => e.program === currentFilter);
+  grid.innerHTML = filtered.map(ex => `
+    <article class="example-card" data-id="${ex.id}">
+      <span class="ex-tag case-${ex.case}">Caso ${ex.case} · ${CASE_NAMES[ex.case]}</span>
+      <div class="ex-program">${PROGRAM_NAMES[ex.program]}</div>
+      <h3 class="ex-title">${ex.title}</h3>
+      <div class="ex-formula">\\(${exampleLatex(ex)}\\)</div>
+      <p class="ex-context">${ex.context}</p>
+      <div class="ex-cta">→ Cargar en simulador</div>
+    </article>
+  `).join('');
+  document.querySelectorAll('.example-card').forEach(card => {
+    card.addEventListener('click', () => loadExample(card.dataset.id));
+  });
+  if (window.MathJax) MathJax.typesetPromise();
+}
+
+function loadExample(id) {
+  const ex = EXAMPLES.find(e => e.id === id);
+  if (!ex) return;
+  STATE.currentCase = ex.case;
+  STATE.caseParams[ex.case] = { ...ex.params };
+  STATE.context = ex.program;
+  STATE.coveredFactor = null;
+  // switch tab
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.tab-btn[data-tab="simulador"]').classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-simulador').classList.add('active');
+  // sync UI
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.preset) === ex.case));
+  document.getElementById('contextSelect').value = ex.program;
+  document.getElementById('scenarioText').textContent = SCENARIOS[ex.program];
+  buildSliders(ex.case);
+  updateAll();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderExamples();
+  });
+});
+
+// =====================================================================
+// PRÁCTICA
+// =====================================================================
+let currentProblemId = 'P1';
+
+function initPractice() {
+  renderProblemList();
+  renderProblem(currentProblemId);
+  updateGlobalScore();
+}
+
+function renderProblemList() {
+  const list = document.getElementById('problemList');
+  list.innerHTML = PROBLEMS.map(p => {
+    const state = STATE.practiceState[p.id];
+    let statusClass = '';
+    if (state) statusClass = state.allCorrect ? 'correct' : 'incorrect';
+    return `
+      <li class="problem-item ${p.id === currentProblemId ? 'active' : ''}" data-id="${p.id}">
+        <span class="pi-num">${p.id}</span>
+        <span>Caso ${p.case}</span>
+        <span class="pi-status ${statusClass}"></span>
+      </li>
+    `;
+  }).join('');
+  document.querySelectorAll('.problem-item').forEach(el => {
+    el.addEventListener('click', () => {
+      currentProblemId = el.dataset.id;
+      renderProblemList();
+      renderProblem(currentProblemId);
+    });
+  });
+}
+
+function renderProblem(id) {
+  const p = PROBLEMS.find(x => x.id === id);
+  const main = document.getElementById('practiceMain');
+  const isMixed = p.case === 4;
+  const isQuadratic = p.case === 3;
+  const showC = isMixed;
+
+  main.innerHTML = `
+    <div class="problem-header">
+      <div class="ph-num">${p.id.replace('P','')}</div>
+      <div>
+        <div class="ph-title">${p.statement}</div>
+      </div>
+      <div class="ph-tag">Problema ${p.id}<br>de 8</div>
+    </div>
+
+    <div class="problem-statement">
+      Dada la función racional siguiente, identifica el tipo de descomposición que requiere, calcula los coeficientes correspondientes y evalúa la integral definida en el intervalo indicado.
+    </div>
+
+    <div class="problem-formula">
+      \\[ f(x) = ${p.formula} \\]
+    </div>
+
+    <div class="answer-form">
+      <div class="form-section">
+        <span class="form-label">Paso 01 · Identificación del caso</span>
+        <div class="case-options" id="caseOptions">
+          ${[1,2,3,4].map(n => `
+            <div class="case-option" data-case="${n}">
+              <span class="co-num">${n}</span>
+              ${CASE_NAMES[n]}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="form-section">
+        <span class="form-label">Paso 02 · Coeficientes de la descomposición</span>
+        <div class="coef-inputs">
+          <div class="coef-input">
+            <label>A</label>
+            <input type="number" step="0.01" id="ansA" placeholder="—">
+            <span class="hint">${p.coefHints[0]}</span>
+          </div>
+          <div class="coef-input">
+            <label>B</label>
+            <input type="number" step="0.01" id="ansB" placeholder="—">
+            <span class="hint">${p.coefHints[1]}</span>
+          </div>
+          <div class="coef-input">
+            <label>C</label>
+            <input type="number" step="0.01" id="ansC" placeholder="${showC ? '—' : 'no aplica'}" ${showC ? '' : 'class="disabled" disabled'}>
+            <span class="hint">${p.coefHints[2]}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <span class="form-label">Paso 03 · Integral definida</span>
+        <div class="integral-input">
+          <span class="integral-context">Calcula \\(\\displaystyle\\int_{${p.interval[0]}}^{${p.interval[1]}} f(x)\\,dx\\) (4 decimales)</span>
+          <input type="number" step="0.0001" id="ansIntegral" placeholder="—">
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button class="btn btn-secondary" id="btnReset">Reiniciar</button>
+        <button class="btn btn-primary" id="btnCheck">Verificar respuesta</button>
+      </div>
+
+      <div class="feedback-card" id="feedbackCard"></div>
+    </div>
+  `;
+
+  // listeners
+  document.querySelectorAll('.case-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.case-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+    });
+  });
+  document.getElementById('btnCheck').addEventListener('click', () => checkAnswer(p));
+  document.getElementById('btnReset').addEventListener('click', () => {
+    document.querySelectorAll('.case-option').forEach(o => o.classList.remove('selected'));
+    document.getElementById('ansA').value = '';
+    document.getElementById('ansB').value = '';
+    if (showC) document.getElementById('ansC').value = '';
+    document.getElementById('ansIntegral').value = '';
+    document.getElementById('feedbackCard').classList.remove('show');
+  });
+
+  // restaurar estado si existe
+  const saved = STATE.practiceState[id];
+  if (saved && saved.lastSubmission) {
+    const s = saved.lastSubmission;
+    if (s.case) {
+      const el = document.querySelector(`.case-option[data-case="${s.case}"]`);
+      if (el) el.classList.add('selected');
+    }
+    if (s.A !== '') document.getElementById('ansA').value = s.A;
+    if (s.B !== '') document.getElementById('ansB').value = s.B;
+    if (showC && s.C !== '') document.getElementById('ansC').value = s.C;
+    if (s.integral !== '') document.getElementById('ansIntegral').value = s.integral;
+  }
+
+  if (window.MathJax) MathJax.typesetPromise();
+}
+
+function checkAnswer(p) {
+  const selected = document.querySelector('.case-option.selected');
+  const userCase = selected ? parseInt(selected.dataset.case) : null;
+  const userA = document.getElementById('ansA').value;
+  const userB = document.getElementById('ansB').value;
+  const userCEl = document.getElementById('ansC');
+  const userC = userCEl.disabled ? null : userCEl.value;
+  const userInt = document.getElementById('ansIntegral').value;
+
+  const showC = p.case === 4;
+  const TOL = 0.05; // tolerancia para coeficientes
+  const TOL_INT = 0.01; // tolerancia para integral (a 4 decimales)
+
+  const checks = {
+    case: userCase === p.answer.case,
+    A: userA !== '' && Math.abs(parseFloat(userA) - p.answer.A) < TOL,
+    B: userB !== '' && Math.abs(parseFloat(userB) - p.answer.B) < TOL,
+    C: showC ? (userC !== '' && Math.abs(parseFloat(userC) - p.answer.C) < TOL) : true,
+    integral: userInt !== '' && Math.abs(parseFloat(userInt) - p.answer.integral) < TOL_INT
+  };
+
+  const total = showC ? 5 : 4;
+  const correct = Object.values(checks).filter(v => v).length - (showC ? 0 : 0);
+  // Si no hay C, descontamos la "trampa" de que C siempre da true
+  const realScore = showC ? correct : (checks.case + checks.A + checks.B + checks.integral);
+  const realTotal = showC ? 5 : 4;
+
+  STATE.practiceState[p.id] = {
+    allCorrect: realScore === realTotal,
+    score: realScore,
+    total: realTotal,
+    lastSubmission: { case: userCase, A: userA, B: userB, C: userC || '', integral: userInt }
+  };
+
+  // render feedback
+  const card = document.getElementById('feedbackCard');
+  let cls = 'all-correct', iconCls = 'ok', icon = '✓', title = '¡Excelente! Resuelto correctamente.';
+  if (realScore === 0) { cls = 'incorrect'; iconCls = 'bad'; icon = '✗'; title = 'Revisa los pasos del procedimiento.'; }
+  else if (realScore < realTotal) { cls = 'partial'; iconCls = 'partial'; icon = '~'; title = 'Casi. Revisa los puntos marcados.'; }
+
+  let detailRows = '';
+  detailRows += renderFeedbackRow('Identificación del caso', checks.case,
+    `Caso correcto: <span class="correct-val">Caso ${p.answer.case} · ${CASE_NAMES[p.answer.case]}</span>` +
+    (userCase ? ` <span class="user-val">(tu respuesta: Caso ${userCase})</span>` : ' (no seleccionado)'));
+  detailRows += renderFeedbackRow('Coeficiente A', checks.A,
+    `Valor correcto: <span class="correct-val">${p.answer.A}</span>` +
+    (userA !== '' ? ` <span class="user-val">(tu respuesta: ${userA})</span>` : ' (vacío)'));
+  detailRows += renderFeedbackRow('Coeficiente B', checks.B,
+    `Valor correcto: <span class="correct-val">${p.answer.B}</span>` +
+    (userB !== '' ? ` <span class="user-val">(tu respuesta: ${userB})</span>` : ' (vacío)'));
+  if (showC) {
+    detailRows += renderFeedbackRow('Coeficiente C', checks.C,
+      `Valor correcto: <span class="correct-val">${p.answer.C}</span>` +
+      (userC !== '' ? ` <span class="user-val">(tu respuesta: ${userC})</span>` : ' (vacío)'));
+  }
+  detailRows += renderFeedbackRow(`Integral en [${p.interval[0]}, ${p.interval[1]}]`, checks.integral,
+    `Valor correcto: <span class="correct-val">${p.answer.integral.toFixed(4)}</span>` +
+    (userInt !== '' ? ` <span class="user-val">(tu respuesta: ${userInt})</span>` : ' (vacío)'));
+
+  card.className = `feedback-card show ${cls}`;
+  card.innerHTML = `
+    <div class="feedback-header">
+      <div class="feedback-icon ${iconCls}">${icon}</div>
+      <div class="feedback-title">${title}</div>
+      <div class="feedback-score">Puntaje<strong>${realScore} / ${realTotal}</strong></div>
+    </div>
+    <div class="feedback-detail">${detailRows}</div>
+  `;
+  renderProblemList();
+  updateGlobalScore();
+}
+
+function renderFeedbackRow(label, isOk, detail) {
+  return `
+    <div class="feedback-row ${isOk ? 'ok' : 'bad'}">
+      <div class="fb-mark">${isOk ? '✓' : '✗'}</div>
+      <div class="fb-text"><strong>${label}</strong> · ${detail}</div>
+    </div>
+  `;
+}
+
+function updateGlobalScore() {
+  const solved = PROBLEMS.filter(p => STATE.practiceState[p.id]?.allCorrect).length;
+  document.getElementById('globalScore').textContent = `${solved} / 8`;
+  const detail = document.getElementById('globalScoreDetail');
+  if (solved === 8) detail.textContent = '¡Has completado los 8 problemas!';
+  else if (solved >= 6) detail.textContent = 'Excelente progreso. Termina los últimos.';
+  else if (solved >= 3) detail.textContent = 'Vas por buen camino.';
+  else detail.textContent = 'Resuelve los 8 problemas para completar.';
+}
+
+// =====================================================================
+// LISTENERS
+// =====================================================================
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.currentCase = parseInt(btn.dataset.preset);
+    STATE.coveredFactor = null;
+    buildSliders(STATE.currentCase);
+    updateAll();
+  });
+});
+
+document.querySelectorAll('.mode-toggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.heavisideMode = btn.dataset.mode;
+    if (STATE.currentFn) renderHeavisideExplanation(STATE.currentFn);
+  });
+});
+
+document.getElementById('aSlider').addEventListener('input', (e) => {
+  STATE.intervalA = parseFloat(e.target.value);
+  document.getElementById('aVal').textContent = STATE.intervalA;
+  if (STATE.currentFn) { computeArea(STATE.currentFn); drawAreaGraph(STATE.currentFn); }
+});
+document.getElementById('bSlider').addEventListener('input', (e) => {
+  STATE.intervalB = parseFloat(e.target.value);
+  document.getElementById('bVal').textContent = STATE.intervalB;
+  if (STATE.currentFn) { computeArea(STATE.currentFn); drawAreaGraph(STATE.currentFn); }
+});
+
+// =====================================================================
+// INIT
+// =====================================================================
+buildSliders(1);
+updateAll();
+</script>
+</body>
+</html>
